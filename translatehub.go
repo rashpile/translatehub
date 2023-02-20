@@ -22,6 +22,17 @@ type Response struct {
 	Error          string `json:"error"`
 }
 
+type Usage struct {
+	Engine  string  `json:"engine"`
+	Count   int     `json:"count"`
+	Limit   int     `json:"limit"`
+	Percent float64 `json:"percent"`
+	Message string  `json:"message"`
+}
+
+type UsageResponse struct {
+	Usage []Usage `json:"usage"`
+}
 type SecretReader interface {
 	Get() string
 }
@@ -34,17 +45,22 @@ func NewTranslate() *Translate {
 	return &Translate{}
 }
 
-func (t *Translate) Usage() string {
-	var s []string
+func (t *Translate) Usage() UsageResponse {
+	var usage []Usage
+
 	for _, p := range t.providers {
 		res := p.Usage()
-		if len(res.Error) > 0 {
-			s = append(s, fmt.Sprintf("%s: %s", p.Name(), res.Error))
-		} else {
-			s = append(s, fmt.Sprintf("%s - %.2f%%", p.Name(), float64(res.Usage.Count)/float64(res.Usage.Limit)*100))
-		}
+		usage = append(usage, Usage{
+			Engine:  p.Name(),
+			Count:   res.Usage.Count,
+			Limit:   res.Usage.Limit,
+			Percent: float64(res.Usage.Count) / float64(res.Usage.Limit) * 100,
+			Message: res.Error,
+		})
 	}
-	return strings.Join(s, "\n")
+	return UsageResponse{
+		Usage: usage,
+	}
 }
 
 func (t *Translate) Translate(req *Request) Response {
