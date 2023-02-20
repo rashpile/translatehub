@@ -13,6 +13,7 @@ type Request struct {
 	SourceLanguage string `json:"sourceLanguage"` // source
 	TargetLanguage string `json:"targetLanguage"` // target
 	Text           string `json:"text"`
+	Engine         string `json:"engine"`
 }
 
 type Response struct {
@@ -69,16 +70,19 @@ func (t *Translate) Usage() UsageResponse {
 
 func (t *Translate) Translate(req *Request) Response {
 	errors := []string{}
+	log.Printf("Engine: %s", req.Engine)
 	for _, p := range t.providers {
-		res := p.Translate(req.Text, req.SourceLanguage, req.TargetLanguage)
-		if len(res.Error) == 0 {
-			return Response{
-				SourceLanguage: req.SourceLanguage,
-				TargetLanguage: req.TargetLanguage,
-				Text:           res.Text,
+		if len(req.Engine) == 0 || strings.EqualFold(req.Engine, p.Name()) {
+			res := p.Translate(req.Text, req.SourceLanguage, req.TargetLanguage)
+			if len(res.Error) == 0 {
+				return Response{
+					SourceLanguage: req.SourceLanguage,
+					TargetLanguage: req.TargetLanguage,
+					Text:           res.Text,
+				}
 			}
+			errors = append(errors, fmt.Sprintf("%s: %s", p.Name(), res.Error))
 		}
-		errors = append(errors, fmt.Sprintf("%s: %s", p.Name(), res.Error))
 	}
 	return Response{
 		SourceLanguage: req.SourceLanguage,
