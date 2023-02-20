@@ -23,11 +23,11 @@ type Response struct {
 }
 
 type Usage struct {
-	Engine  string  `json:"engine"`
-	Count   int     `json:"count"`
-	Limit   int     `json:"limit"`
-	Percent float64 `json:"percent"`
-	Message string  `json:"message"`
+	Engine  string `json:"engine"`
+	Count   int    `json:"count"`
+	Limit   int    `json:"limit"`
+	Percent string `json:"percent"`
+	Message string `json:"message"`
 }
 
 type UsageResponse struct {
@@ -50,11 +50,15 @@ func (t *Translate) Usage() UsageResponse {
 
 	for _, p := range t.providers {
 		res := p.Usage()
+		ps := 0.0
+		if res.Usage.Limit != 0 {
+			ps = float64(res.Usage.Count) / float64(res.Usage.Limit) * 100
+		}
 		usage = append(usage, Usage{
 			Engine:  p.Name(),
 			Count:   res.Usage.Count,
 			Limit:   res.Usage.Limit,
-			Percent: float64(res.Usage.Count) / float64(res.Usage.Limit) * 100,
+			Percent: fmt.Sprintf("%.2f%%", ps),
 			Message: res.Error,
 		})
 	}
