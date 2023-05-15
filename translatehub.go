@@ -84,6 +84,19 @@ func (t *Translate) Translate(req *Request) Response {
 			errors = append(errors, fmt.Sprintf("%s: %s", p.Name(), res.Error))
 		}
 	}
+	if len(errors) == 0 {
+		for _, p := range t.providers {
+			res := p.Translate(req.Text, req.SourceLanguage, req.TargetLanguage)
+			if len(res.Error) == 0 {
+				return Response{
+					SourceLanguage: req.SourceLanguage,
+					TargetLanguage: req.TargetLanguage,
+					Text:           res.Text,
+				}
+			}
+			errors = append(errors, fmt.Sprintf("%s: %s", p.Name(), res.Error))
+		}
+	}
 	return Response{
 		SourceLanguage: req.SourceLanguage,
 		TargetLanguage: req.TargetLanguage,
