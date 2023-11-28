@@ -70,7 +70,7 @@ func (t *Translate) Usage() UsageResponse {
 
 func (t *Translate) Translate(req *Request) Response {
 	errors := []string{}
-	log.Printf("Engine: %s", req.Engine)
+	//log.Printf("Engine: %s", req.Engine)
 	for _, p := range t.providers {
 		if len(req.Engine) == 0 || strings.EqualFold(req.Engine, p.Name()) {
 			res := p.Translate(req.Text, req.SourceLanguage, req.TargetLanguage)
